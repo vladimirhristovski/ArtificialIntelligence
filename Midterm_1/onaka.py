@@ -1,74 +1,66 @@
 from constraint import *
 
 
-def grouped_by_four(*variables):
-    num_termini = {"T1": 0, "T2": 0, "T3": 0, "T4": 0}
+# var    #domain     #dic
+def max_4_constraint(*paperIDs_domains):
+    check_my_dic = {}
+    # print(paperIDs_domains)
 
-    for variable in variables:
-        num_termini[variable] = num_termini[variable] + 1
+    # only 4 in one termin
+    for termin in paperIDs_domains:
+        if termin not in check_my_dic.keys():
+            check_my_dic[termin] = 1
+        else:
+            check_my_dic[termin] = check_my_dic.get(termin) + 1
+    for value in check_my_dic.values():
+        if value > 4:
+            return False
 
-    return num_termini["T1"] <= 4 and num_termini["T2"] <= 4 and num_termini["T3"] <= 4 \
-        and num_termini["T4"] <= 4
+    return True
 
 
-def printSolution(solution):
-    papers = sorted(solution)
-
-    terms = []
-
-    for value in papers:
-        terms.append(solution[value])
-
-    print(f"{papers[0][0]} ({papers[0][1]}): {terms[0]}")
-    for i in range(2, len(papers)):
-        print(f"{papers[i][0]} ({papers[i][1]}): {terms[i]}")
-    print(f"{papers[1][0]} ({papers[1][1]}): {terms[1]}")
+def must_be_in_same_termin(*paperIds_domains):
+    return len(set(paperIds_domains)) == 1
 
 
 if __name__ == '__main__':
     num = int(input())
 
     papers = dict()
-    variables = []
 
     paper_info = input()
     while paper_info != 'end':
         title, topic = paper_info.split(' ')
         papers[title] = topic
         paper_info = input()
-        variables.append((title, topic))
 
     # Tuka definirajte gi promenlivite
-    ...
+    variables = [var + f" ({papers[var]})" for var in papers.keys()]
+    # print(variables)
 
     domain = [f'T{i + 1}' for i in range(num)]
+    # print(domain)
 
     problem = Problem(BacktrackingSolver())
-    AI_papers = []
-    ML_papers = []
-    NLP_papers = []
-
-    for variable in variables:
-        if variable[1] == "AI":
-            AI_papers.append(variable)
-        elif variable[1] == "ML":
-            ML_papers.append(variable)
-        else:
-            NLP_papers.append(variable)
 
     # Dokolku vi e potrebno moze da go promenite delot za dodavanje na promenlivite
     problem.addVariables(variables, domain)
 
     # Tuka dodadete gi ogranichuvanjata
-    if len(AI_papers) > 0 and len(AI_papers) <= 4:
-        problem.addConstraint(AllEqualConstraint(), AI_papers)
-    if len(ML_papers) > 0 and len(ML_papers) <= 4:
-        problem.addConstraint(AllEqualConstraint(), ML_papers)
-    if len(NLP_papers) > 0 and len(NLP_papers) <= 4:
-        problem.addConstraint(AllEqualConstraint(), NLP_papers)
-
-    problem.addConstraint(grouped_by_four, variables)
+    problem.addConstraint(max_4_constraint, tuple(variables))
+    oblasti = tuple(set(papers.values()))
+    # print(oblasti)
+    for oblast in oblasti:
+        l1 = []
+        for var in variables:
+            if oblast in var:
+                l1.append(var)
+        # print(l1)
+        if len(l1) <= 4:
+            problem.addConstraint(must_be_in_same_termin, l1)
 
     result = problem.getSolution()
 
-    printSolution(result)
+    # Tuka dodadete go kodot za pechatenje
+    for v in variables:
+        print(v + ": " + result[v])
