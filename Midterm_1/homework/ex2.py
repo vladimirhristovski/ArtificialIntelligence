@@ -121,7 +121,6 @@ if __name__ == '__main__':
         for j in range(1, 5):
             variables.append((i, j))
             problem.addVariable((i, j), [0, 1])
-            #Додавање на сите полиња од табелата во променливата variables
 
     row_check = []
     for row in range(1, 5):
